@@ -1,0 +1,25 @@
+{
+  "name": "huffin-generator",
+  "version": "1.0.0",
+  "description": "Huffin key generator",
+  "bin": {
+    "huffin": "bin/huffin"
+  },
+  "dependencies": {
+    "huffin": "^1.0.1-0",
+    "nan": "^2.4.0",
+    "node-gyp-build": "^3.0.0",
+    "progress": "^2.0.0",
+    "yargs": "^7.1.0"
+  },
+  "scripts": {
+    "test": "mocha --reporter=spec --timeout=60000 test/*-test.js",
+    "install": "node-gyp-build \"node preinstall.js\" \"node postinstall.js\""
+  },
+  "keywords": [],
+  "author": "Fedor Indutny <fedor@indutny.com> (http://darksi.de/)",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^3.2.0"
+  }
+}
