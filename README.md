@@ -2,6 +2,18 @@
 
 Vanitiy ed25519 public key generator using [huffin][0] representation.
 
+## Output
+
+```
+$ ./bin/huffin -p hype
+[========----------------------------------------------------] [2560000/19315482] [45.68%] [0d  0h  2m 17s] [145116 ops/sec]
+{
+  "secretKey": "5c9e6ddd82ea287508d3a0728bc625f0dace66db8b9cd8763b0f52d52ccde63e9c2e5cb5c7119e6f3cbe837950e74486863eb7c78ffcf9efc6315ac89924698c",
+  "publicKey": "9c2e5cb5c7119e6f3cbe837950e74486863eb7c78ffcf9efc6315ac89924698c",
+  "id": "@hype/AnC5ctccRnm88voN5UOdEhoY+t8eP/PnvxjFayJk"
+}
+```
+
 ## LICENSE
 
 This software is licensed under the MIT License.

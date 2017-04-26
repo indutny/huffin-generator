@@ -24,8 +24,8 @@ if (cluster.isMaster) {
   const SEARCH_SPACE = Math.pow(2, bitLength);
 
   const TARGET_PROBABILITY = 0.99;
-  const INITIAL_TOTAL = Math.log(1 - TARGET_PROBABILITY) /
-                        Math.log(1 - 1 / SEARCH_SPACE);
+  const INITIAL_TOTAL = Math.ceil(Math.log(1 - TARGET_PROBABILITY) /
+                                  Math.log(1 - 1 / SEARCH_SPACE));
 
   const progress = new ProgressBar(
     '[:bar] [:current/:total] [:probability%] [:detailed_eta] [:rate ops/sec]',
@@ -85,8 +85,10 @@ if (cluster.isMaster) {
       if (msg.type === 'result') {
         workers.forEach(worker => worker.process.kill('SIGKILL'));
 
-        if (!done)
+        if (!done) {
+          process.stderr.write('\n');
           console.log(JSON.stringify(msg.payload, null, 2));
+        }
         done = true;
       } else if (msg.type === 'status') {
         const counter = msg.payload;
