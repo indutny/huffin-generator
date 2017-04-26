@@ -29,7 +29,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ### Credits
 
-Big kudods to [sodium-native][1] from which I borrowed the most of the build
+Big kudos to [sodium-native][1] from which I borrowed the most of the build
 configuration.
 
 [0]: https://github.com/indutny/huffin
