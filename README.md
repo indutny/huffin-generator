@@ -27,4 +27,10 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+### Credits
+
+Big kudods to [sodium-native][1] from which I borrowed the most of the build
+configuration.
+
 [0]: https://github.com/indutny/huffin
+[1]: https://github.com/sodium-friends/sodium-native

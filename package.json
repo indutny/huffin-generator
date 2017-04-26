@@ -5,6 +5,10 @@
   "bin": {
     "huffin": "bin/huffin"
   },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:indutny/huffin-generator"
+  },
   "dependencies": {
     "huffin": "^1.0.1-0",
     "nan": "^2.4.0",
