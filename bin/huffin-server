@@ -125,7 +125,8 @@ Job.prototype.cancel = function cancel() {
 
 Job.prototype._notify = function _notify(email, id) {
   const cmd =
-      `echo "Job # ${id}" | mail -s "Huffin Generator completed job" ${email}`;
+      `echo "Job # ${id} Tag: ${config.tag}" | `
+      `mail -s "Huffin Generator completed job" ${email}`;
   exec(cmd, () => {});
 };
 
@@ -173,7 +174,8 @@ function Server(options) {
   this.app.post('/job', Celebrate({
     body: Joi.object().keys({
       prefix: Joi.string().min(5).max(15).required(),
-      workers: Joi.number().min(1).max(CPUS).default(CPUS),
+      tag: Joi.string().min(0).default('no tag').optional(),
+      workers: Joi.number().min(1).max(CPUS).default(CPUS).optional(),
       email: Joi.string().optional()
     })
   }), (req, res) => {
