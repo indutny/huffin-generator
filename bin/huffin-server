@@ -154,16 +154,14 @@ function Server(options) {
     this.jobs.forEach(value => jobs.push(value));
     res.json({
       jobs,
+      queue: this.queue,
+      history: this.history,
       'idle-cpus': this._cpus
     });
   });
 
   this.app.get('/queue', (req, res) => {
     res.json(this.queue);
-  });
-
-  this.app.get('/history', (req, res) => {
-    res.json(this.history);
   });
 
   this.app.delete('/history', (req, res) => {
