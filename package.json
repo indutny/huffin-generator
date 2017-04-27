@@ -17,7 +17,7 @@
     "yargs": "^7.1.0"
   },
   "scripts": {
-    "test": "mocha --reporter=spec --timeout=90000 test/*-test.js",
+    "test": "mocha --reporter=spec --timeout=300000 test/*-test.js",
     "install": "node-gyp-build \"node preinstall.js\" \"node postinstall.js\""
   },
   "keywords": [],
