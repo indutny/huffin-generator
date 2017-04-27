@@ -1,0 +1,7 @@
+{
+  "cert": "cert.pem",
+  "key": "key.pem",
+  "port": 1443,
+  "username": "huffin",
+  "passphrase": "huffin"
+}

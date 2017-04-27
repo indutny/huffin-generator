@@ -1,134 +1,97 @@
 #!/usr/bin/env node
 
-const cluster = require('cluster');
+const path = require('path');
+const fork = require('child_process').fork;
 const id = require('huffin');
 
-const ITERATIONS = 10000;
+const argv = require('yargs')
+    .alias('p', 'prefix')
+    .alias('j', 'jobs')
+    .describe('prefix', 'output representation prefix')
+    .describe('jobs', 'number of concurrent jobs')
+    .number('jobs')
+    .demand('prefix')
+    .argv;
 
-if (cluster.isMaster) {
-  const argv = require('yargs')
-      .alias('p', 'prefix')
-      .alias('j', 'jobs')
-      .describe('prefix', 'output representation prefix')
-      .describe('jobs', 'number of concurrent jobs')
-      .number('jobs')
-      .demand('prefix')
-      .argv;
+const os = require('os');
+const ProgressBar = require('progress');
 
-  const os = require('os');
-  const ProgressBar = require('progress');
+const bitLength = id.parsePrefix(argv.prefix).bitLength;
 
-  const bitLength = id.parsePrefix(argv.prefix).bitLength;
+const CPU_COUNT = argv.jobs || os.cpus().length;
+const SEARCH_SPACE = Math.pow(2, bitLength);
 
-  const CPU_COUNT = argv.jobs || os.cpus().length;
-  const SEARCH_SPACE = Math.pow(2, bitLength);
+const TARGET_PROBABILITY = 0.99;
+const INITIAL_TOTAL = Math.ceil(Math.log(1 - TARGET_PROBABILITY) /
+                                Math.log(1 - 1 / SEARCH_SPACE));
 
-  const TARGET_PROBABILITY = 0.99;
-  const INITIAL_TOTAL = Math.ceil(Math.log(1 - TARGET_PROBABILITY) /
-                                  Math.log(1 - 1 / SEARCH_SPACE));
-
-  const progress = new ProgressBar(
-    '[:bar] [:current/:total] [:probability%] [:detailed_eta] [:rate ops/sec]',
-    {
-      width: 60,
-      total: INITIAL_TOTAL
-    }
-  );
-
-  let lastTotal = 0;
-  const start = Date.now();
-
-  function pad2(num) {
-    let res = num.toString();
-    while (res.length < 2)
-      res = ' ' + res;
-    return res;
+const progress = new ProgressBar(
+  '[:bar] [:current/:total] [:probability%] [:detailed_eta] [:rate ops/sec]',
+  {
+    width: 60,
+    total: INITIAL_TOTAL
   }
+);
 
-  function report() {
-    let total = 0;
-    for (let i = 0; i < counts.length; i++)
-      total += counts[i];
+let lastTotal = 0;
+const start = Date.now();
 
-    const delta = total - lastTotal;
-    lastTotal = total;
-    while (total >= progress.total)
-      progress.total *= 2;
-
-    const speed = total * 1e3 / (Date.now() - start);
-    const seconds = progress.total / speed;
-
-    const eta = {
-      days: Math.floor(seconds / (3600 * 24)),
-      hours: pad2(Math.floor((seconds % (3600 * 24)) / 3600)),
-      minutes: pad2(Math.floor((seconds % (3600)) / 60)),
-      seconds: pad2(Math.floor(seconds % 60))
-    };
-
-    let p = (1 - Math.pow(1 - 1 / SEARCH_SPACE, total)) * 100;
-    progress.tick(delta, {
-      probability: p.toFixed(2),
-      detailed_eta: `${eta.days}d ${eta.hours}h ${eta.minutes}m ${eta.seconds}s`
-    });
-  }
-
-  let done = false;
-  const workers = [];
-
-  const counts = new Array(CPU_COUNT).fill(0);
-  for (let i = 0; i < CPU_COUNT; i++) {
-    const worker = cluster.fork();
-    workers.push(worker);
-
-    worker.send({ prefix: argv.prefix });
-    worker.on('message', (msg) => {
-      if (msg.type === 'result') {
-        workers.forEach(worker => worker.process.kill('SIGKILL'));
-
-        if (!done) {
-          process.stderr.write('\n');
-          console.log(JSON.stringify(msg.payload, null, 2));
-        }
-        done = true;
-      } else if (msg.type === 'status') {
-        const counter = msg.payload;
-        counts[i] = counter;
-        report();
-      }
-    });
-  }
-  return;
+function pad2(num) {
+  let res = num.toString();
+  while (res.length < 2)
+    res = ' ' + res;
+  return res;
 }
 
-const binding = require('../');
+function report() {
+  let total = 0;
+  for (let i = 0; i < counts.length; i++)
+    total += counts[i];
 
-process.on('message', (config) => {
-  const prefix = id.parsePrefix(config.prefix);
-  const prefixBuf = prefix.value.toBuffer();
-  const prefixBits = prefix.bitLength;
+  const delta = total - lastTotal;
+  lastTotal = total;
+  while (total >= progress.total)
+    progress.total *= 2;
 
-  let pair;
-  for (let counter = 0; ; counter += ITERATIONS) {
-    process.send({
-      type: 'status',
-      payload: counter
-    });
-    pair = binding.generate(prefixBuf, prefixBits, ITERATIONS);
-    if (pair)
-      break;
-  }
+  const speed = total * 1e3 / (Date.now() - start);
+  const seconds = progress.total / speed;
 
-  pair = {
-    secretKey: pair,
-    publicKey: pair.slice(32)
+  const eta = {
+    days: Math.floor(seconds / (3600 * 24)),
+    hours: pad2(Math.floor((seconds % (3600 * 24)) / 3600)),
+    minutes: pad2(Math.floor((seconds % (3600)) / 60)),
+    seconds: pad2(Math.floor(seconds % 60))
   };
 
-  process.send({
-    type: 'result',
-    payload: {
-      secretKey: pair.secretKey.toString('hex'),
-      publicKey: pair.publicKey.toString('hex'),
-      id: id.stringify(pair.publicKey, config.prefix.length)
+  let p = (1 - Math.pow(1 - 1 / SEARCH_SPACE, total)) * 100;
+  progress.tick(delta, {
+    probability: p.toFixed(2),
+    detailed_eta: `${eta.days}d ${eta.hours}h ${eta.minutes}m ${eta.seconds}s`
+  });
+}
+
+let done = false;
+const workers = [];
+
+const counts = new Array(CPU_COUNT).fill(0);
+for (let i = 0; i < CPU_COUNT; i++) {
+  const worker = fork(path.join(__dirname, 'huffin-worker.js'));
+  workers.push(worker);
+
+  worker.send({ prefix: argv.prefix });
+  worker.on('message', (msg) => {
+    if (msg.type === 'result') {
+      workers.forEach(worker => worker.kill('SIGKILL'));
+
+      if (!done) {
+        process.stderr.write('\n');
+        console.log(JSON.stringify(msg.payload, null, 2));
+      }
+      done = true;
+    } else if (msg.type === 'status') {
+      const counter = msg.payload;
+      counts[i] += counter;
+      report();
     }
   });
-});
+}

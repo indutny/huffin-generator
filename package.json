@@ -3,14 +3,20 @@
   "version": "1.0.1-1",
   "description": "Huffin key generator",
   "bin": {
-    "huffin": "bin/huffin"
+    "huffin": "bin/huffin",
+    "huffin-server": "bin/huffin-server"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:indutny/huffin-generator"
   },
   "dependencies": {
+    "body-parser": "^1.17.1",
+    "celebrate": "^4.0.1",
+    "express": "^4.15.2",
+    "express-basic-auth": "^1.0.2",
     "huffin": "^1.0.1-0",
+    "joi": "^10.4.1",
     "nan": "^2.4.0",
     "node-gyp-build": "^3.0.0",
     "progress": "^2.0.0",
