@@ -33,6 +33,7 @@ function Job(id, config) {
   this.config = config;
   this.status = 'waiting';
   this.result = null;
+  this.timestamp = Date.now();
 
   this.counters = new Array(this.config.workers).fill(0);
   this.workers = new Array(this.config.workers).fill(null);
@@ -49,6 +50,7 @@ Job.prototype.toJSON = function toJSON() {
 
   return {
     id: this.id,
+    timestamp: this.timestamp,
     status: this.status,
     config: this.config,
     stats: { ticks },
@@ -60,6 +62,7 @@ Job.prototype.run = function run(callback) {
   assert(!this.process);
 
   this.status = 'running';
+  this.timestamp = Date.now();
 
   for (let i = 0; i < this.workers.length; i++) {
     assert(!this.workers[i]);
@@ -77,6 +80,7 @@ Job.prototype.run = function run(callback) {
         return;
 
       this.status = 'complete';
+      this.timestamp = Date.now();
       this.result = msg.payload;
 
       if (this.config.email)
@@ -97,6 +101,7 @@ Job.prototype.run = function run(callback) {
         return;
 
       this.status = 'died';
+      this.timestamp = Date.now();
 
       // Teardown rest
       this.cancel();
@@ -113,6 +118,7 @@ Job.prototype.cancel = function cancel() {
     this.status = 'canceled';
   else if (this.status === 'running')
     this.status = 'killed';
+  this.timestamp = Date.now();
 
   for (let i = 0; i < this.workers.length; i++) {
     if (!this.workers[i])
