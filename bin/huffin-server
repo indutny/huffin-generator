@@ -50,7 +50,7 @@ Job.prototype.toJSON = function toJSON() {
 
   return {
     id: this.id,
-    timestamp: this.timestamp,
+    elapsed: Date.now() - this.timestamp,
     status: this.status,
     config: this.config,
     stats: { ticks },
