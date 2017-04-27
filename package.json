@@ -1,6 +1,6 @@
 {
   "name": "huffin-generator",
-  "version": "1.0.1-2",
+  "version": "1.0.1-3",
   "description": "Huffin key generator",
   "bin": {
     "huffin": "bin/huffin",
